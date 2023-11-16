@@ -1,14 +1,17 @@
 <script lang="ts">
-      import { onMount } from 'svelte';
+      import { onMount,afterUpdate } from 'svelte';
       import axios from 'axios';
 	import type { User } from '$lib/session';
 	import type { Message } from '../../types';
+    import io from 'socket.io-client';
+    import type { Socket } from 'socket.io-client';
 	import { goto } from '$app/navigation';
       let users: User[] = [];
       let user: User | null = null;
       let messages:Message[]=[]
       let MessageUser:User |null=null
       let sentMessage:string=''
+      let socket:Socket;
 
       
 
@@ -59,19 +62,24 @@
         Receiver:MessageUser?._id,
         Content:sentMessage
     }
-    console.log(formdata)
     const response=await axios.post("http://localhost:5000/msg/send",formdata)
-    console.log(response.data)
   sentMessage=''
   }
   const logout=()=>{
     localStorage.clear()
     goto("/login")
   }
+
+
+
+
+
   
 
 
   onMount(async () => {
+    // Replace the URL with your server URL
+   
     await FetchUsers();
 
     if (typeof window !== 'undefined') {
@@ -81,9 +89,41 @@
      
         // Filter out the user based on the _id
         users = users.filter((userMAN: User) => userMAN._id !== user?._id);
+        socket = io('http://localhost:5000');
+
+    // Listen for the 'connect' event
+    socket.on('connect', () => {
+      console.log('Socket connected');
+    });
+
+    // Listen for the 'disconnect' event
+    socket.on('disconnect', () => {
+      console.log('Socket disconnected');
+    });
+
+    // Listen for the 'message' event
+   
+        
       
     }
+ 
   });
+//   afterUpdate(() => {
+//     if (user?._id) {
+//       console.log("Joining room");
+//       socket.emit('joinRoom', { room: user._id });
+//       console.log("room joined")
+//       console.log("starting log")
+//       socket.on('message', (message) => {
+//       console.log('Received message in room:', user?._id, message);
+//       console.log("finished")
+//       // Handle the received message as needed
+//     });
+//     }
+ 
+//   });
+
+
 
 </script>
 <style>
