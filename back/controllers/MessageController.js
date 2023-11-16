@@ -15,7 +15,9 @@ exports.SendMsg=async(req,res)=>{
         const savedMsg=await msg.save(msg)
         console.log("im here")
         if (req.io) {
-            req.io.to(Sender).emit("message", savedMsg);
+            req.io.emit("message", savedMsg,()=>{
+                console.log("emitted")
+            });
             console.log("should be here");
             // req.io.to(Receiver).emit("message",savedMsg)
           }

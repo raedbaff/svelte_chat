@@ -12,6 +12,25 @@
       let MessageUser:User |null=null
       let sentMessage:string=''
       let socket:Socket;
+      socket = io('http://localhost:5000');
+
+// Listen for the 'connect' event
+socket.on('connect', () => {
+  console.log('Socket connected');
+});
+
+// Listen for the 'disconnect' event
+socket.on('disconnect', () => {
+  console.log('Socket disconnected');
+});
+socket.on('welcome', (welcomeMessage) => {
+    console.log('Received welcome message:', welcomeMessage);
+  });
+  socket.on('message', (message) => {
+    console.log('Received message', message);
+    messages=[...messages,message]
+    // Handle the received message as needed
+  });
 
       
 
@@ -89,17 +108,7 @@
      
         // Filter out the user based on the _id
         users = users.filter((userMAN: User) => userMAN._id !== user?._id);
-        socket = io('http://localhost:5000');
-
-    // Listen for the 'connect' event
-    socket.on('connect', () => {
-      console.log('Socket connected');
-    });
-
-    // Listen for the 'disconnect' event
-    socket.on('disconnect', () => {
-      console.log('Socket disconnected');
-    });
+  
 
     // Listen for the 'message' event
    

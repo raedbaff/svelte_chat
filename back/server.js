@@ -40,6 +40,10 @@ mongoose
 
 io.on("connection", (socket) => {
   console.log("A user connected");
+  socket.emit("welcome", "Welcome to the chat!",()=>{
+    console.log("emitted from sever")
+  });
+ 
 
   socket.on("disconnect", () => {
     console.log("User disconnected");
