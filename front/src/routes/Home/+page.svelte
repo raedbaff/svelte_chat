@@ -11,6 +11,7 @@
       let messages:Message[]=[]
       let MessageUser:User |null=null
       let sentMessage:string=''
+      let recieverid:string=""
       let socket:Socket;
       socket = io('http://localhost:5000');
 
@@ -28,7 +29,11 @@ socket.on('welcome', (welcomeMessage) => {
   });
   socket.on('message', (message) => {
     console.log('Received message', message);
-    messages=[...messages,message]
+    if ((message.Sender===user?._id && message.Receiver==recieverid) || (message.Sender===recieverid && message.Receiver==user?._id))
+    {
+        messages=[...messages,message]
+    }
+    
     // Handle the received message as needed
   });
 
@@ -61,6 +66,8 @@ socket.on('welcome', (welcomeMessage) => {
  
  const  handleClick = async (userId: string) => {
     const responseUser=await axios.get(`http://localhost:5000/user/profile/${userId}`)
+    recieverid=userId
+    
     MessageUser=responseUser.data
     // Handle click logic here
   
