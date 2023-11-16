@@ -2,8 +2,13 @@
       import { onMount } from 'svelte';
       import axios from 'axios';
 	import type { User } from '$lib/session';
+	import type { Message } from '../../types';
+	import { goto } from '$app/navigation';
       let users: User[] = [];
       let user: User | null = null;
+      let messages:Message[]=[]
+      let MessageUser:User |null=null
+      let sentMessage:string=''
 
       
 
@@ -15,7 +20,6 @@
      if (response.status === 200) {
         users=response.data
         
-        console.log(users)
             
    
      
@@ -33,10 +37,40 @@
  
  };
  
- const handleClick = (userId: string) => {
+ const  handleClick = async (userId: string) => {
+    const responseUser=await axios.get(`http://localhost:5000/user/profile/${userId}`)
+    MessageUser=responseUser.data
     // Handle click logic here
-    console.log(`Clicked on user with ID: ${userId}`);
+  
+
+    let formdata={
+        Sender:userId,
+        Receiver:user?._id
+    }
+    const response=await axios.post("http://localhost:5000/msg/all",formdata)
+    messages=response.data
+
   };
+  const handleSubmit=async(e:Event)=>{
+    
+    e.preventDefault()
+    var formdata={
+        Sender:user?._id,
+        Receiver:MessageUser?._id,
+        Content:sentMessage
+    }
+    console.log(formdata)
+    const response=await axios.post("http://localhost:5000/msg/send",formdata)
+    console.log(response.data)
+  sentMessage=''
+  }
+  const logout=()=>{
+    localStorage.clear()
+    goto("/login")
+  }
+  
+
+
   onMount(async () => {
     await FetchUsers();
 
@@ -47,7 +81,6 @@
      
         // Filter out the user based on the _id
         users = users.filter((userMAN: User) => userMAN._id !== user?._id);
-        console.log(users);
       
     }
   });
@@ -348,7 +381,7 @@
                   {user?.name} {user?.LastName}
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <a class="dropdown-item" href="/">Logout</a>
+                  <a class="dropdown-item" href="/" on:click={logout}>Logout</a>
                
                 </div>
               </div>
@@ -359,7 +392,7 @@
     <div class="container-fluid" style="margin-top:2%">
     <div class="row clearfix">
         <div class="col-lg-12">
-            <div class="card chat-app">
+            <div class="card chat-app" style="min-height:80vh">
                 <div id="plist" class="people-list">
                     <div class="input-group">
                         <div class="input-group-prepend">
@@ -400,8 +433,13 @@
                                     <img src="https://bootdey.com/img/Content/avatar/avatar2.png" alt="avatar">
                                 </a>
                                 <div class="chat-about">
-                                    <h6 class="m-b-0">Aiden Chavez</h6>
-                                    <small>Last seen: 2 hours ago</small>
+                                    {#if MessageUser==null}
+                                    <h6 class="m-b-0 text-dark ">User</h6>
+                                    <small class="text-dark">Message User</small>
+                                    {:else}
+                                    <h6 class="m-b-0 text-dark ">{MessageUser?.name} {MessageUser?.LastName}</h6>
+                                    <small class="text-dark">Chat with {MessageUser?.name}</small>
+                                    {/if}
                                 </div>
                             </div>
                             <div class="col-lg-6 hidden-sm text-right">
@@ -412,37 +450,46 @@
                             </div>
                         </div>
                     </div>
-                    <div class="chat-history">
+                    <div class="chat-history" style="overflow-y:auto;height:600px">
                         <ul class="m-b-0">
+                            {#each messages as message(message?._id)}
+                            {#if message?.Sender==user?._id}
                             <li class="clearfix">
                                 <div class="message-data text-right">
-                                    <span class="message-data-time">10:10 AM, Today</span>
+                                    <span class="message-data-time">{message.timestamp.toString().replace("T"," ").split(".")[0].substring(0,16)}</span>
                                     <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar">
                                 </div>
-                                <div class="message other-message float-right"> Hi Aiden, how are you? How is the project coming along? </div>
+                                <div class="message other-message float-right"> {message.Content} </div>
                             </li>
+                          
+                         
+                         
+                            {:else}
                             <li class="clearfix">
                                 <div class="message-data">
-                                    <span class="message-data-time">10:12 AM, Today</span>
+                                    <span class="message-data-time">{message.timestamp.toString().replace("T"," ").split(".")[0].substring(0,16)}</span>
                                 </div>
-                                <div class="message my-message">Are we meeting today?</div>                                    
-                            </li>                               
-                            <li class="clearfix">
-                                <div class="message-data">
-                                    <span class="message-data-time">10:15 AM, Today</span>
-                                </div>
-                                <div class="message my-message">Project has been already finished and I have results to show you.</div>
-                            </li>
+                                <div class="message my-message">{message.Content}</div>                                    
+                            </li>  
+                      
+                          
+                            {/if}
+                            {/each}
+                          
+                                                     
+                        
                         </ul>
                     </div>
+                    <form on:submit={handleSubmit}>
                     <div class="chat-message clearfix">
                         <div class="input-group mb-0">
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fa fa-send"></i></span>
                             </div>
-                            <input type="text" class="form-control" placeholder="Enter text here...">                                    
+                            <input type="text" class="form-control" bind:value={sentMessage} placeholder="Enter text here...">                                    
                         </div>
                     </div>
+                </form>
                 </div>
             </div>
         </div>

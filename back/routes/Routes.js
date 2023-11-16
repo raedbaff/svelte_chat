@@ -12,5 +12,5 @@ router.post("/msg/all",MessageController.GetMessagesbetweenUsers)
 router.post("/user/register",UserController.Register)
 router.post("/user/login",UserController.Login)
 router.get("/user/all",UserController.GetAllUsers)
-router.get("/user/profile/:id",validateToken,UserController.getUser)
+router.get("/user/profile/:id",UserController.getUser)
 module.exports=router;
