@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  chatfront:
+    image: raed98/chatfront:0.0.5
+    ports:
+      - "3001:3000"  # Adjust the port if needed
+    depends_on:
+      - chatback
+
+  chatback:
+    image: raed98/chatback:0.0.2
+    ports:
+      - "5000:5000"  # Keep this as it is if your back-end service uses port 3000
